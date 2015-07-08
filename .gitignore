@@ -1,4 +1,4 @@
-#Ignore any files starting with a period
+#Ignore credentials file
 creds.py
 
 #Ignore any python bytecode files
