@@ -1,0 +1,1 @@
+<methodCall><methodName>participant.enumerate</methodName><params><param><value><struct><member><name>authenticationUser</name><value><string>testUser</string></value></member><member><name>authenticationPassword</name><value><string>testPass</string></value></member></struct></value></param></params></methodCall>
