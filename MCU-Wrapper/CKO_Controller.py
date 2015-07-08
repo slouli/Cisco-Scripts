@@ -71,47 +71,11 @@ class CkoController(McuApiWrapper):
                 return pList
 
             else:
-                return _getParticipantInfoRec(self, enumId, dNameList, pNameList, \
-                        pTypeList, confNameList, pMutedList, pImportantList)
+                return _getParticipantInfoRec(self, enumId, dNameList, \
+                        pNameList, pTypeList, confNameList, pMutedList, \
+                        pImportantList)
         
         return _getParticipantInfoRec(self, [], [], [], [], [], [], [])
-
-
-    def getParticipantInfo(self):
-
-        enumId = []
-        dNameList = []
-        pNameList = []
-        pTypeList = []
-        confNameList = []
-        pMutedList = []
-        pImportantList = []
-
-        while True:
-            self.setMethod("participant.enumerate")
-            self.addArrMember("operationScope", ['currentState'])
-            self.addMember("enumerateFilter", "(connected)", "string")
-
-            #Check if enumId is set
-            self.addMember("enumerateID", "" if not enumId else enumId.pop(), "string")
-
-            root = ET.fromstring(self.submitRequest())
-            
-            enumId = self.getStrVal(root, ["enumerateID"])
-            dNameList = dNameList + self.getStrVal(root, ["displayName"])
-            pNameList = pNameList + self.getStrVal(root, ["participantName"])
-            pTypeList = pTypeList + self.getStrVal(root, ["participantType"])
-            confNameList = confNameList + self.getStrVal(root, ["conferenceName", "autoAttendantUniqueId"])
-        
-            pMutedList = pMutedList + self.getArrVal(root, "currentState", "audioRxMuted", "boolean")
-            pImportantList = pImportantList + self.getArrVal(root, "currentState", "important", "boolean")
-            
-            self.participantList = [(dName, pName, pMuted, pImportant, pType, confName) for (dName, pName, pMuted, pImportant, pType, confName) in zip(dNameList, pNameList, pMutedList, pImportantList, pTypeList, confNameList) if confName == self.confName] 
-             
-            #If there are no more returned IDs, we have checked all participants
-            if not enumId:
-                break
-        return
 
 
     def _sendMsg(self, confName, pId, pProtocol, pType, msg):
