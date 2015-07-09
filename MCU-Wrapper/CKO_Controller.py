@@ -10,8 +10,6 @@ class CkoController(McuApiWrapper):
         self.confName = confName
         super(CkoController,self).__init__(url, user, pwd, elementTree)
         
-        #self.participantList = list()
-        #self.reset()
         return
 
 
