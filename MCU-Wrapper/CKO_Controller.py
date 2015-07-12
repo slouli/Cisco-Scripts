@@ -1,4 +1,5 @@
 from lxml import etree as ET
+
 import requests
 from MCU_API_Wrapper import McuApiWrapper
 from creds import *
@@ -9,8 +10,6 @@ class CkoController(McuApiWrapper):
         
         self.confName = confName
         super(CkoController,self).__init__(url, user, pwd, elementTree)
-        
-        return
 
 
     def _copy(self, methodCall):
@@ -61,18 +60,16 @@ class CkoController(McuApiWrapper):
             #print confNameList
 
             if not enumId:
-                pList = [(dName, pName, pMuted, pImportant, pType, confName) \
+                return [(dName, pName, pMuted, pImportant, pType, confName) \
                         for (dName, pName, pMuted, pImportant, pType, confName)\
                         in zip(dNameList, pNameList, pMutedList, \
                         pImportantList, pTypeList, confNameList) \
                         if confName == self.confName]
-                return pList
-
             else:
                 return _getParticipantInfoRec(self, enumId, dNameList, \
                         pNameList, pTypeList, confNameList, pMutedList, \
                         pImportantList)
-        
+
         return _getParticipantInfoRec(self, [], [], [], [], [], [], [])
 
 
@@ -91,6 +88,35 @@ class CkoController(McuApiWrapper):
         result = methodCall.submitRequest() 
         return 
 
+
+    def _isAlone(self, confName, moddedP, pList):
+        """Check if participant remaining is only one active"""
+        #Check for Unmuted members
+        #Check if there are only 2 members left
+        #If so, then  remove the inactive member.
+
+        active = [participant for participant in pList if participant[2]=="0"]
+        
+        mutedParticipant = [participant for particpant in active \
+                if len(active) == 2 and participant[1] == moddedP]
+
+        try:
+            final = active.remove(modify)
+            print final
+        except:
+            print "Oops, participant no longer in list"
+
+        methodCall = (
+                self.setMethod("participant.modify")
+                .addMember("conferenceName", confName, "string")
+                .addMember("participantName", pId, "string")
+                .addMember("participantProtocol", "sip", "string")
+                #Insert More Here
+                )
+
+        print active
+
+
  
     def modifyParticipant(self, confName, pList, userIndex):
         """Mute Participant or Unmute and set as Important"""
@@ -98,7 +124,11 @@ class CkoController(McuApiWrapper):
         
         impVal = "0" if pMuted == "0" else "1"
         mutedVal = "1" if pMuted == "0" else "0"
-        visualCue = "You Are Live!" if mutedVal == "0" else "You Are Muted"       
+        visualCue = "You Are Live!" if mutedVal == "0" else "You Are Muted" 
+        
+        print pMuted
+        #self._isAlone(confName, userIndex, pList)
+
         methodCall = (
                 self.setMethod("participant.modify")
                 .addMember("conferenceName", confName, "string")
