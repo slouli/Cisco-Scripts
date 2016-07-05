@@ -1,5 +1,16 @@
 #Ignore credentials file
 creds.py
 
+#Ignore Virtual Env Folders
+bin/
+include/
+lib/
+pip-selfcheck.json
+
 #Ignore any python bytecode files
 *.pyc
+*.exe
+
+#Ignore text editor  backup
+*~
+*.swp
