@@ -55,32 +55,18 @@ class CssPtValidator(object):
         cssPts = xmlCss.xpath("//clause/text()")
         self.css = {css_name: set(partitions.split(':')) for (css_name, partitions) in zip(cssNames, cssPts)}
 
+    def getPts(self):
+        return self.pts
+
+    def getCss(self):
+        return self.css
+
 
 def main():
     
-    r = SqlQuery("select pkid, name from routepartition")
-
-    root = etree.fromstring(r.execute())
-
-    expr = etree.XPath("//name")
-    names = root.xpath("//name/text()")
-    pkids = root.xpath("//pkid/text()")
-
-    zipped = list(zip(pkids, names))
-
-    #print(names)
-    
-    #query2 = SqlQuery("select * from callingsearchspacemember where fkroutepartition = '" + zipped[0][0] +"'")
-    #r2 = requests.post(url, data=query2.toString(), auth=auth, verify=False)
-    
-    r3 = SqlQuery("select name, clause from callingsearchspace")
-
-    root3 = etree.fromstring(r3.execute())
-    
-    names3 = root3.xpath("//name/text()")
-    clause = root3.xpath("//clause/text()")
-
-    css = {css_name: set(partitions.split(':')) for (css_name, partitions) in zip(names3, clause)}
+    cssDesign1 = CssPtValidator()
+    names = cssDesign1.getPts()
+    css = cssDesign1.getCss()
 
     #print(css)
 
