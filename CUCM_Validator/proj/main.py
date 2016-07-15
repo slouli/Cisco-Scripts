@@ -54,6 +54,8 @@ class CssPtValidator(object):
         cssNames = xmlCss.xpath("//name/text()") 
         cssPts = xmlCss.xpath("//clause/text()")
         self.css = {css_name: set(partitions.split(':')) for (css_name, partitions) in zip(cssNames, cssPts)}
+        self.ptPat = []
+        self._cssPat = ''
 
     def getPts(self):
         return self.pts
@@ -61,13 +63,92 @@ class CssPtValidator(object):
     def getCss(self):
         return self.css
 
+    def addPat(self, string, group=0):
+        self.ptPat.append({"pat": string, "group": group})
+
+    @property
+    def cssPat(self):
+        return self._cssPat
+
+    @cssPat.setter
+    def cssPat(self, string):
+        self._cssPat = string
+    
+    def _ptIsValid(self, pat, string, loc):
+        is_device = re.search(pat["pat"], string)
+        if is_device is None: return False
+
+        if pat["group"] == 1:
+            is_same_loc = re.search("PT-(.*)-.*", string).group(1) == loc
+            #print('{}, {}, {}'.format(loc, re.search("PT-(.*)-.*", string).group(1), is_same_loc))
+            #print('{}, {}, {}'.format(is_same_loc, is_device.group(0), string))
+            return (is_same_loc and is_device.group(0) == string)
+
+        return is_device.group(pat["group"]) == string
+
+    def _cssIsValid(self, pat, string):
+        is_css= re.search(pat, string)
+        return True if is_css else False
+
+    def execute(self):
+        css_dict = {css_key: self.css[css_key] for css_key in self.css \
+                if self._cssIsValid(self._cssPat, css_key)}
+        
+        css_loc = [re.match('CSS-(.*)-.*', key).group(1) for key in css_dict]
+
+        for css, loc in zip(css_dict,css_loc):
+            pt_set = set([pt for pt in self.pts \
+                for pat in self.ptPat \
+                if self._ptIsValid(pat, pt, loc)
+                ])
+
+            print('===================')
+            print(loc)
+            print('===================')
+            #print(pt_set)
+            set_diff_add = pt_set-css_dict[css]
+
+            print("{} : {}".format(css ,set_diff_add))
+
+            set_diff_remove = css_dict[css]-pt_set
+
+            print("{} : {}".format(css, set_diff_remove))
+            print()
+
+    def pretty_print(self, set_diff):
+        for key in set_diff:
+            print("{} : {}".format(key, set_diff[key])) 
+
 
 def main():
     
+    #Instantiate CssPt Validator class, extract partitions and calling search spaces.
     cssDesign1 = CssPtValidator()
     names = cssDesign1.getPts()
     css = cssDesign1.getCss()
+   
+    cssDesign1.cssPat = 'CSS-.*-Device'
+    cssDesign1.addPat('PT-.*-Devices')
+    cssDesign1.addPat('PT-General')
+    cssDesign1.addPat('Directory URI')
+    cssDesign1.addPat('PT-(.*)-Conference', 1)
+    cssDesign1.addPat('PT-(.*)-Emergency', 1)
+    cssDesign1.execute()
 
+    
+    print("NEXT============================================================")
+
+    cssDesign2 = CssPtValidator()
+    cssDesign2.cssPat = 'CSS-.*-LocalTF'
+    cssDesign2.addPat('PT-(.*)-Devices', 1)
+    cssDesign2.addPat('PT-(.*)-LocalTF', 1)
+    cssDesign2.addPat('PT-B-National-NA')
+    cssDesign2.addPat('PT-B-International-NA')
+    cssDesign2.addPat('PT-B-Premium-NA')
+    cssDesign2.execute()
+
+
+"""
     #print(css)
 
     #Convert list to sets
@@ -90,16 +171,13 @@ def main():
     device_css = {device_css: css[device_css] for device_css in css if valid_css(device_css)} 
 
     print("=====================")
-    #print(device_pts)
+    print("=++++++ADD PTS++++++=")
     print("=====================")
     #print(device_css)
     #3. Loop through all the dict entries, confirm the sets are equal
     #   --If not equal, document missing paritions, document extra partitions
     set_diff = {css: device_pts-device_css[css] for css in device_css}
-
-    for key in set_diff:
-        print("{} : {}".format(key, set_diff[key])) 
-
+"""
 
 if __name__ == "__main__":
     main()
