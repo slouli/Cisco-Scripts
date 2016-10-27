@@ -4,6 +4,10 @@ from requests.auth import HTTPBasicAuth
 from lxml import etree
 
 class SoapBase(object):
+    """This is the parent class for the XML Soap requests.
+    It contains the base XML for all of the UCM directed Soap requests.
+    This class should not be instantiated.  Only instantiate it's children"""
+
     soapenv = "http://schemas.xmlsoap.org/soap/envelope/"
     ns = "http://www.cisco.com/AXL/API/10.0"
 
@@ -76,17 +80,18 @@ class SqlAddCss(SoapBase):
 
 class SqlUpdateCss(SoapBase):
     
-    def __init__(self, cssName, partition):
+    def __init__(self, cssName, ptList):
         super().__init__()
         updateCss = etree.SubElement(self.body, "{%s}updateCss" % SoapBase.ns)
         updateCss.set("sequence", "?")
         name = etree.SubElement(updateCss, "name")
         name.text = cssName
-
         addMembers = etree.SubElement(updateCss, "addMembers")
-        member = etree.SubElement(addMembers, "member")
-        ptName = etree.SubElement(member, "routePartitionName")
-        ptName.set("uuid", "?")
-        ptName.text = partition
-        index = etree.SubElement(member, "index")
-        index.text = str(0)
+        
+        for idx, pt in enumerate(ptList):
+            member = etree.SubElement(addMembers, "member")
+            ptName = etree.SubElement(member, "routePartitionName")
+            ptName.set("uuid", "?")
+            ptName.text = pt
+            index = etree.SubElement(member, "index")
+            index.text = str(idx)

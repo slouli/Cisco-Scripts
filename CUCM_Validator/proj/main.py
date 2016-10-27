@@ -94,41 +94,41 @@ class CssPtValidator(object):
 class CssCreator(object):
 
     def __init__(self, loc, desc, pts, css):
-        self.loc = loc
         self.desc = desc
-        self.pts = partitionFilter(pts, "PT-.*-Devices")
-        self.css = cssFilter(css, "CSS-.*-Device")
-
+        self.ptList = partitionFilter(pts, "PT-.*-Devices")
+        self.cssList = cssFilter(css, "CSS-.*-Device")
+        self.ptDeviceName = "PT-{}-Devices".format(loc)
+        self.ptDeviceDesc = "PT {} Devices".format(loc)
+        self.ptConfName = "PT-{}-Conference".format(loc)
+        self.ptConfDesc = "PT {} Global Meet Conferencing".format(loc)
+        self.ptEmerName = "PT-{}-Emergency".format(loc)
+        self.ptEmerDesc = "PT {} Emergency Calls".format(loc)
+        self.cssName = "CSS-{}-Device".format(loc)
+        self.cssDesc = "CSS {} Device".format(loc)
+    
     def _newPts(self):
-        ptDeviceName = "PT-{}-Devices".format(self.loc)
-        ptDeviceDesc = "PT {} Devices".format(self.loc)
-        ptConfName = "PT-{}-Conference".format(self.loc)
-        ptConfDesc = "PT {} Global Meet Conferencing".format(self.loc)
-        ptEmerName = "PT-{}-Emergency".format(self.loc)
-        ptEmerDesc = "PT {} Emergency Calls".format(self.loc)
-        return [(ptDeviceName, ptDeviceDesc), (ptConfName, ptConfDesc), (ptEmerName, ptEmerDesc)]
+        return [SqlAddPartition(self.ptDeviceName, self.ptDeviceDesc), 
+                SqlAddPartition(self.ptConfName, self.ptConfDesc), 
+                SqlAddPartition(self.ptEmerName, self.ptEmerDesc)]
 
     def _createCss(self):
-        cssName = "CSS-{}-Device".format(self.loc)
-        cssDesc = "CSS {} Device".format(self.loc)
-        cssMem = list(self.pts)
-        allPts = [pt[0] for pt in self._newPts()] + cssMem
-        return cssName, cssDesc, allPts
+        allPts = [self.ptDeviceName, self.ptConfName, self.ptEmerName] + self.ptList
+        return SqlAddCss(self.cssName, self.cssDesc, allPts)
 
-    def _updateOldCss(self): pass
+    def _updateCss(self):
+        return [SqlUpdateCss(cssId, [self.ptDeviceName]) for cssId in self.cssList]
 
     def validate(self):
-        for ptName, ptDescr in self._newPts(): print(SqlAddPartition(ptName, ptDescr).toString())
-        cssName, cssDesc, cssMem = self._createCss()
-        print(SqlAddCss(cssName, cssDesc, cssMem).toString())
+        for ptXml in self._newPts(): print(ptXml.toString())
+        print(self._createCss().toString())
+        for cssUpdate in self._updateCss(): print(cssUpdate.toString())
 
-        for cssName in self.css: print(SqlUpdateCss(cssName, "PT-{}-Devices".format(self.loc)).toString())
-
-    def execute(self): pass
+    def execute(self): pass   #Implement execution of the XML Files
 
 
 def main():
     #GET PARTITIONS AND CSS VALUES
+    #Can rewrite the query classes as pure AXL vs. AXL with SQL query
     getPts = "select pkid, name from routepartition"
     getCss = "select name, clause from callingsearchspace"
     xmlPts = etree.fromstring(SqlQuery(getPts).execute())
