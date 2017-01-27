@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+import argparse
+from utilities import *
+from packages.soap import SqlUpdatePt
+
+parser = argparse.ArgumentParser(description='Bulk UCM Editor')
+parser.add_argument('pattern', type=str)
+parser.add_argument('match', type=str)
+parser.add_argument('replace', type=str)
+parser.add_argument("--execute", action='store_true')
+args = parser.parse_args()
+
+pts = getPartitions()
+filteredPts = partitionFilter(pts, args.pattern)
+ptDict = ptSub(filteredPts, args.match, args.replace)
+
+print(ptDict)
+
+if args.execute:
+    [print(SqlUpdatePt(oldName, newName).execute()) for oldName, newName in ptDict.items()]
+

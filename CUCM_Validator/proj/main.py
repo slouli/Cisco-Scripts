@@ -1,13 +1,33 @@
 import re
+import argparse
 from lxml import etree
 from packages.soap import SqlQuery, SqlAddPartition, SqlAddCss, SqlUpdateCss
+from packages.objectify import Location, Css, Partition, PartitionList
+from packages.generator import CssDesign, SpecificElement, GenericElement, LocSpecificElement 
+from functools import reduce
+from utilities import *
 
-def partitionFilter(pts, pattern):
-    return [partition for partition in pts if re.search(pattern, partition)]
 
 def cssFilter(cssDict, pattern):
     return {cssName:cssDict[cssName] for cssName in cssDict if re.search(pattern, cssName)}
             
+
+class CssPtValidatorNew(object):
+    def __init__(self, name, ptList, cssName, loc = ".*"):
+        self.design = [] #List of expected partitions in a CSS
+        self.loc = loc #CSS 'location'
+        self.func = "" #CSS function (e.g. National)
+        
+    def addPat(self, loc = ".*", grp=None, conn=None):
+        #PT-[ANY]-Devices
+        #PT-LOCATION-CONFERENCE
+        #PT-LOCATION-EMERGENCY
+        #PT-SPECIFICTHING
+        paramList = [param for param in [loc, grp, conn] if param is not None]
+        pattern = reduce(lambda x, y: x+"-"+y, paramList, "PT")
+        self.design.append(pattern)
+        print(self.design)
+
 
 class CssPtValidator(object):
     
@@ -126,18 +146,57 @@ class CssCreator(object):
     def execute(self): pass   #Implement execution of the XML Files
 
 
+class CssUpdater(object):
+    def __init__(self, cssPattern, ptList, css):
+        self.cssList = cssFilter(css, cssPattern)
+        self.ptList = ptList
+
+    def _updateCss(self):
+        return [SqlUpdateCss(cssId, self.ptList + sorted(list(ptSet - set(self.ptList)))) \
+                for cssId, ptSet in self.cssList.items()]
+
+    def validate(self):
+        for cssUpdate in self._updateCss(): print(cssUpdate.toString())
+
+    def execute(self):
+        [print(updateCss.execute()) for updateCss in self._updateCss()]
+
+
+
+
 def main():
+    
+    #PARTITION NAME CHAGE#
+    parser = argparse.ArgumentParser(description='Bulk UCM Editor')
+    parser.add_argument('pattern', type=str)
+    parser.add_argument('conv', type=str)
+    parser.add_argument('--execute', dest='partitionExec')
+
+    args = parser.parse_args()
+    print(args.pattern)
+    print(args.conv)
+
+
+
     #GET PARTITIONS AND CSS VALUES
     #Can rewrite the query classes as pure AXL vs. AXL with SQL query
-    getPts = "select pkid, name from routepartition"
     getCss = "select name, clause from callingsearchspace"
-    xmlPts = etree.fromstring(SqlQuery(getPts).execute())
+    getLocs = "select name from location where name like 'Loc-%'"
     xmlCss = etree.fromstring(SqlQuery(getCss).execute())
-    pts = xmlPts.xpath("//name/text()")
+    xmlLocs = etree.fromstring(SqlQuery(getLocs).execute())
+    print(etree.tostring(xmlLocs, pretty_print=True))
+    pts = getPartitions()
     cssNames = xmlCss.xpath("//name/text()") 
     cssPts = xmlCss.xpath("//clause/text()")
     css = {css_name: set(partitions.split(':')) for (css_name, partitions) in zip(cssNames, cssPts)}
-    
+    _, allLocs = zip(*[loc.split("-") for loc in xmlLocs.xpath("//name/text()")])
+    EXCLUSION_LIST = {"CMS","ILS"}
+
+
+    matchingPts = partitionFilter(pts, args.pattern)
+    print(matchingPts)
+
+    locs = sorted(list(set(allLocs) - EXCLUSION_LIST))
 
     #Instantiate CssPt Validator class, extract partitions and calling search spaces.
     #Device CSS
@@ -149,6 +208,7 @@ def main():
     cssDevice.addPat('PT-(.*)-Conference', 1)
     cssDevice.addPat('PT-(.*)-Emergency', 1)
     cssDevice.addPat('PT-CMS')
+    cssDevice.addPat('PT-WLVCS-Outbound')
     cssDevice.addPat('PT-ILS-Trunks')
     cssDevice.addPat('PT-Unity-Pilot')
     cssDevice.addPat('PT-Unity-Ports')
@@ -190,6 +250,30 @@ def main():
     #print(cssFilter(css, "CSS-.*-Device"))
     cssCreatorTest = CssCreator("NEWLOC", "NEWLOC", pts, css)
     cssCreatorTest.validate()
+
+    cssDevice = CssPtValidatorNew("Device CSS", pts, css)
+    cssDevice.addPat("CMS")
+    cssDevice.addPat("Kingston","Devices")
+    cssDevice.addPat(grp="Devices")
+
+
+    cssDevices = CssDesign("Devices", locs)
+    cssDevices.addDesign(SpecificElement("Directory URI"))
+    cssDevices.addDesign(SpecificElement("PT-CMS"))
+    cssDevices.addDesign(SpecificElement("PT-ILS-Trunks"))
+    cssDevices.addDesign(SpecificElement("PT-WLVCS-Outbound"))
+    cssDevices.addDesign(SpecificElement("PT-General"))
+    cssDevices.addDesign(SpecificElement("PT-Unity-Pilot"))
+    cssDevices.addDesign(SpecificElement("PT-Unity-Ports"))
+    cssDevices.addDesign(GenericElement("Devices"))
+    cssDevices.addDesign(LocSpecificElement("Conference"))
+    cssDevices.addDesign(LocSpecificElement("Emergency"))
+    for _css in cssDevices.generate(): print(_css)
+
+    ptList = PartitionList.fromStringList(["Directory URI", "PT-CMS", "PT-ILS-Trunks", "PT-WLVCS-Outbound", "PT-Kingston-Devices"])
+    videoPts = CssUpdater("CSS-Tampa-Device", ptList.toList(), css)
+    videoPts.validate()
+    #videoPts.execute()
 
 """
     #print(css)

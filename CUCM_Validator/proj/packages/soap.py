@@ -77,6 +77,25 @@ class SqlAddCss(SoapBase):
             index = etree.SubElement(member, "index")
             index.text = str(idx)
 
+class SqlGetCss(SoapBase):
+    def __init__(self, cssName):
+        super().__init__()
+        getCss = etree.SubElement(self.body, "{$s}getCss" % SoapBase.ns)
+        getCss.set("sequence", "?")
+        name = etree.SubElement(getCss, "name")
+        name.text = cssName
+
+
+class SqlUpdatePt(SoapBase):
+    def __init__(self, ptName, newPtName):
+        super().__init__()
+        updatePt = etree.SubElement(self.body, "{%s}updateRoutePartition" % SoapBase.ns)
+        updatePt.set("sequence", "?")
+        name = etree.SubElement(updatePt, "name")
+        name.text = ptName
+        newName = etree.SubElement(updatePt, "newName")
+        newName.text = newPtName
+
 
 class SqlUpdateCss(SoapBase):
     
@@ -86,7 +105,7 @@ class SqlUpdateCss(SoapBase):
         updateCss.set("sequence", "?")
         name = etree.SubElement(updateCss, "name")
         name.text = cssName
-        addMembers = etree.SubElement(updateCss, "addMembers")
+        addMembers = etree.SubElement(updateCss, "members")
         
         for idx, pt in enumerate(ptList):
             member = etree.SubElement(addMembers, "member")
