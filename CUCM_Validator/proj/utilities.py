@@ -2,6 +2,9 @@ import re
 from packages.soap import SqlQuery
 from lxml import etree
 
+def flatten(listOfLists):
+    return [val for sublist in listOfLists for val in sublist if val is not None]
+
 def partitionFilter(pts, pattern):
     return [partition for partition in pts if re.search(pattern, partition)]
 
@@ -18,3 +21,18 @@ def getPartitions():
     pts = xmlPts.xpath("//name/text()")
     return pts
 
+def getCallingSearchSpaces():
+    getCss = "select name, clause from callingsearchspace"
+    xmlCss = etree.fromstring(SqlQuery(getCss).execute())
+    cssNames = xmlCss.xpath("//name/text()")
+    cssPts = xmlCss.xpath("//clause/text()")
+    css = {css_name: set(partitions.split(':')) for (css_name, partitions) in zip(cssNames, cssPts)}
+    return css
+
+def getLocations():
+    getLocs = "select name from location where name like 'Loc-%'"
+    xmlLocs = etree.fromstring(SqlQuery(getLocs).execute())
+    _, allLocs = zip(*[loc.split("-") for loc in xmlLocs.xpath("//name/text()")])
+    EXCLUSION_LIST = {"CMS", "ILS"}
+    locs = sorted(list(set(allLocs) - EXCLUSION_LIST))
+    return locs
