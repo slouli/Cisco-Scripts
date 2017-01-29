@@ -5,12 +5,8 @@ from packages.soap import SqlQuery, SqlAddPartition, SqlAddCss, SqlUpdateCss
 from packages.objectify import Location, Css, Partition, PartitionList
 from packages.generator import CssDesign, SpecificElement, GenericElement, LocSpecificElement 
 from functools import reduce
-from utilities import *
+from utilities import getPartitions, partitionFilter, cssFilter
 
-
-def cssFilter(cssDict, pattern):
-    return {cssName:cssDict[cssName] for cssName in cssDict if re.search(pattern, cssName)}
-            
 
 class CssPtValidatorNew(object):
     def __init__(self, name, ptList, cssName, loc = ".*"):
@@ -165,19 +161,6 @@ class CssUpdater(object):
 
 
 def main():
-    
-    #PARTITION NAME CHAGE#
-    parser = argparse.ArgumentParser(description='Bulk UCM Editor')
-    parser.add_argument('pattern', type=str)
-    parser.add_argument('conv', type=str)
-    parser.add_argument('--execute', dest='partitionExec')
-
-    args = parser.parse_args()
-    print(args.pattern)
-    print(args.conv)
-
-
-
     #GET PARTITIONS AND CSS VALUES
     #Can rewrite the query classes as pure AXL vs. AXL with SQL query
     getCss = "select name, clause from callingsearchspace"
@@ -191,10 +174,6 @@ def main():
     css = {css_name: set(partitions.split(':')) for (css_name, partitions) in zip(cssNames, cssPts)}
     _, allLocs = zip(*[loc.split("-") for loc in xmlLocs.xpath("//name/text()")])
     EXCLUSION_LIST = {"CMS","ILS"}
-
-
-    matchingPts = partitionFilter(pts, args.pattern)
-    print(matchingPts)
 
     locs = sorted(list(set(allLocs) - EXCLUSION_LIST))
 
