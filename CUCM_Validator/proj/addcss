@@ -3,10 +3,10 @@ import argparse
 import re
 import pprint
 from packages.soap import SqlAddCss
-from utilities import getLocations, getPartitions, partitionFilter, flatten
+from utilities import getPartitions, partitionFilter, flatten
 from packages.generator import CssDesign, SpecificElement, GenericElement, LocSpecificElement
 
-parser = argparse.ArgumentParser(description='Bulk CSS Updater')
+parser = argparse.ArgumentParser(description='Add CSS w/ Partitions')
 parser.add_argument('name', type=str)
 parser.add_argument('description', type=str)
 parser.add_argument('--n', dest='newName', type=str, help='CSS Name')

@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+import argparse
+import re
+import pprint
+from packages.soap import SqlUpdateCss
+from utilities import getPartitions, getCallingSearchSpaces, flatten, partitionFilter, cssFilter
+
+parser = argparse.ArgumentParser(description='Bulk CSS Updater')
+parser.add_argument('name', type=str)
+parser.add_argument('--re', dest='members', nargs='+', help='PT Members to Add')
+parser.add_argument('--execute', action='store_true')
+args = parser.parse_args()
+
+
+pts = getPartitions()
+css = getCallingSearchSpaces()
+
+partitionList = sorted(flatten([partitionFilter(pts, pattern) for pattern in args.members]))
+cssList = cssFilter(css, args.name)
+
+updatedCss = {cssName:sorted(list(ptList) + list(set(partitionList) - ptList)) for cssName, ptList in cssList.items()}
+
+pprint.pprint(updatedCss)
+
+if args.execute:
+    [print(SqlUpdateCss(cssName, ptList).execute()) for cssName, ptList in updatedCss.items()]
+
+#loc = re.search('CSS-(.*?)-.*', args.name).group(0)
+#locs = getLocations()
+#for location in locs:
+#    ptSubstitute(args.member, "<loc>", location)
+
+#PT-.*-Devices
+#PT-<loc>-Conference
+#PT-CMS

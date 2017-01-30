@@ -5,7 +5,7 @@ from packages.soap import SqlQuery, SqlAddPartition, SqlAddCss, SqlUpdateCss
 from packages.objectify import Location, Css, Partition, PartitionList
 from packages.generator import CssDesign, SpecificElement, GenericElement, LocSpecificElement 
 from functools import reduce
-from utilities import getPartitions, partitionFilter, cssFilter
+from utilities import getPartitions, getCallingSearchSpaces, getLocations, partitionFilter, cssFilter
 
 
 class CssPtValidatorNew(object):
@@ -158,24 +158,12 @@ class CssUpdater(object):
         [print(updateCss.execute()) for updateCss in self._updateCss()]
 
 
-
-
 def main():
     #GET PARTITIONS AND CSS VALUES
     #Can rewrite the query classes as pure AXL vs. AXL with SQL query
-    getCss = "select name, clause from callingsearchspace"
-    getLocs = "select name from location where name like 'Loc-%'"
-    xmlCss = etree.fromstring(SqlQuery(getCss).execute())
-    xmlLocs = etree.fromstring(SqlQuery(getLocs).execute())
-    print(etree.tostring(xmlLocs, pretty_print=True))
     pts = getPartitions()
-    cssNames = xmlCss.xpath("//name/text()") 
-    cssPts = xmlCss.xpath("//clause/text()")
-    css = {css_name: set(partitions.split(':')) for (css_name, partitions) in zip(cssNames, cssPts)}
-    _, allLocs = zip(*[loc.split("-") for loc in xmlLocs.xpath("//name/text()")])
-    EXCLUSION_LIST = {"CMS","ILS"}
-
-    locs = sorted(list(set(allLocs) - EXCLUSION_LIST))
+    css = getCallingSearchSpaces()
+    locs = getLocations()
 
     #Instantiate CssPt Validator class, extract partitions and calling search spaces.
     #Device CSS
