@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+import argparse
+from packages.addpt import main as addpt
+#import addcss.main
+
+class Partition:
+    def __init__(self,name, description, execute):
+        self.name = name
+        self.description = description
+        self.execute = execute
+
+def main(args):
+    #Start by Adding Necessary Partitions
+    loc = args.name
+    partitions = [
+            ("PT-{}-Conf".format(loc), "PT {} Conference".format(loc)),
+            ("PT-{}-Devices".format(loc), "PT {} Devices".format(loc)),
+            ("PT-{}-Emer".format(loc), "PT {} Emergency".format(loc)),
+            ("PT-{}-LocalTF".format(loc), "PT {} LocalTF".format(loc)),
+            ("PT-{}-Nat".format(loc), "PT {} National".format(loc)),
+            ("PT-{}-Internat".format(loc), "PT {} International".format(loc)),
+            ("PT-{}-Prem".format(loc), "PT {} Premium".format(loc))
+            ]   
+
+
+    [addpt(Partition(pt, descr, False)) for (pt, descr) in partitions]
+
+    #Combine Partitions into relevant CSSs
+
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Add OT Office')
+    parser.add_argument("name", type=str, help='Office Name')
+    parser.add_argument("--execute", action='store_true')
+    args = parser.parse_args()
+    main(args)

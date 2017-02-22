@@ -1,5 +1,5 @@
 import requests
-from .creds import Creds
+from packages.creds import Creds
 from requests.auth import HTTPBasicAuth
 from lxml import etree
 
@@ -76,6 +76,7 @@ class SqlAddCss(SoapBase):
             ptName.text = pt
             index = etree.SubElement(member, "index")
             index.text = str(idx)
+
 
 class SqlGetCss(SoapBase):
     def __init__(self, cssName):
