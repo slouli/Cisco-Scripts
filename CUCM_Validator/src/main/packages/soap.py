@@ -23,10 +23,14 @@ class SoapBase(object):
         self.body = etree.SubElement(self.envelope, "{%s}Body" % SoapBase.soapenv)
 
     def execute(self):
-        url="https://10.230.154.5:8443/axl/"
-        auth=HTTPBasicAuth(Creds.username, Creds.password)
-        r = requests.post(url, data=self.toString(), auth=auth, verify=False)
-        return r.content
+        confirm = str(input("Are you sure you want to execute [n]: "))
+        if confirm is "y" or confirm is "ye" or confirm is "yes":
+            url="https://10.230.154.5:8443/axl/"
+            auth=HTTPBasicAuth(Creds.username, Creds.password)
+            r = requests.post(url, data=self.toString(), auth=auth, verify=False)
+            return r.content
+        else:
+            return "Execution not confirmed"
 
     def toString(self):
         return etree.tostring(self.envelope, encoding="UTF-8")
