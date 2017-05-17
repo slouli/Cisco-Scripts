@@ -36,3 +36,8 @@ def getLocations():
     EXCLUSION_LIST = {"CMS", "ILS"}
     locs = sorted(list(set(allLocs) - EXCLUSION_LIST))
     return locs
+
+def getConfirmation():
+    confirm = str(input("Are you sure you want to execute [n]: "))
+    if confirm is "y" or confirm is "ye" or confirm is "yes": return True
+    else: return False

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import pprint
-from packages.utilities import getPartitions, ptSubstitute, partitionFilter
+from packages.utilities import getPartitions, ptSubstitute, partitionFilter, getConfirmation
 from packages.soap import SqlUpdatePt
 
 def main(args):
@@ -11,5 +11,6 @@ def main(args):
     pprint.pprint(ptDict)
     
     if args.execute:
-        [print(SqlUpdatePt(oldName, newName).execute()) for oldName, newName in ptDict.items()]
+        if getConfirmation():
+            [print(SqlUpdatePt(oldName, newName).execute()) for oldName, newName in ptDict.items()]
 
