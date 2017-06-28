@@ -36,3 +36,13 @@ def getLocations():
     EXCLUSION_LIST = {"CMS", "ILS"}
     locs = sorted(list(set(allLocs) - EXCLUSION_LIST))
     return locs
+
+def getDeviceName(xml):
+    xmlPhones = etree.fromstring(xml)
+    deviceNames = xmlPhones.xpath("//name/text()")
+    deviceProfiles = xmlPhones.xpath("//currentProfileName/text() | //currentProfileName[not(text())]")
+    
+    deviceTupleList = list(zip(deviceNames, deviceProfiles))
+    filteredList = [(device, profile) for (device, profile) in deviceTupleList if type(profile) is etree._ElementUnicodeResult]
+    return filteredList
+
