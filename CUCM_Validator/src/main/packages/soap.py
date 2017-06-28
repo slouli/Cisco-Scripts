@@ -17,9 +17,12 @@ class SoapBase(object):
         }
 
     def _getConfirmation(self):
+        """
         confirm = str(input("Are you sure you want to execute [n]: "))
         if confirm is "y" or confirm is "ye" or confirm is "yes": return True
         else: return False
+        """
+        return True
     
     def __init__(self):
         #Envelope will mutate, must instantiate as part of the object
@@ -37,7 +40,7 @@ class SoapBase(object):
             r = requests.post(url, data=self.toString(), auth=auth, verify=False)
             return r.content
         else:
-            return "Execution Not Confirmed"
+            return "Execution Aborted"
 
     def toString(self):
         return etree.tostring(self.envelope, encoding="UTF-8")

@@ -3,7 +3,7 @@ import argparse
 import re
 import pprint
 from packages.soap import SqlUpdateCss
-from packages.utilities import getPartitions, getCallingSearchSpaces, flatten, partitionFilter, cssFilter
+from packages.utilities import getPartitions, getCallingSearchSpaces, flatten, partitionFilter, cssFilter, getConfirmation
 
 
 def main(args):
@@ -17,7 +17,8 @@ def main(args):
     pprint.pprint(updatedCss)
     
     if args.execute:
-        [print(SqlUpdateCss(cssName, ptList).execute()) for cssName, ptList in updatedCss.items()]
+        if getConfirmation():
+            [print(SqlUpdateCss(cssName, ptList).execute()) for cssName, ptList in updatedCss.items()]
 
 
 #loc = re.search('CSS-(.*?)-.*', args.name).group(0)
