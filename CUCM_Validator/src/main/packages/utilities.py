@@ -15,9 +15,9 @@ def ptSubstitute(pts, match, sub):
 def cssFilter(cssDict, pattern):
     return {cssName:cssDict[cssName] for cssName in cssDict if re.search(pattern, cssName)}
 
-def getPartitions():
+def getPartitions(cluster):
     getPts = "select pkid, name from routepartition"
-    xmlPts = etree.fromstring(SqlQuery(getPts).execute(True))
+    xmlPts = etree.fromstring(SqlQuery(cluster, getPts).execute(True))
     pts = xmlPts.xpath("//name/text()")
     return pts
 

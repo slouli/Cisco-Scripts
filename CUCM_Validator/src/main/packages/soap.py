@@ -1,5 +1,5 @@
 import requests
-from packages.creds import Creds
+from packages.creds import Creds, clusters
 from requests.auth import HTTPBasicAuth
 from lxml import etree
 
@@ -24,7 +24,8 @@ class SoapBase(object):
         """
         return True
     
-    def __init__(self):
+    def __init__(self, cluster):
+        self.cluster = clusters(cluster)
         #Envelope will mutate, must instantiate as part of the object
         self.envelope = etree.Element("{%s}Envelope" % SoapBase.soapenv, nsmap=SoapBase.envelope_ns)
         etree.SubElement(self.envelope, "{%s}Header" % SoapBase.soapenv)
@@ -35,7 +36,7 @@ class SoapBase(object):
         else: confirmed = confirmation
 
         if confirmed:
-            url="https://10.230.154.5:8443/axl/"
+            url="https://{}:8443/axl/".format(self.cluster)
             auth=HTTPBasicAuth(Creds.username, Creds.password)
             r = requests.post(url, data=self.toString(), auth=auth, verify=False)
             return r.content
@@ -45,11 +46,31 @@ class SoapBase(object):
     def toString(self):
         return etree.tostring(self.envelope, encoding="UTF-8")
 
+class AddSrst(SoapBase):
+
+    def __init__(self, name, ip, port = "2000",  sipPort = "5060", isSecure = "false"):
+        super().__init__()
+        addSrst = etree.SubElement(self.body, "{%s}addSrst" % SoapBase.ns)
+        addSrst.set("sequence","?")
+        srst = etree.SubElement(addSrst, "srst")
+        srstName = etree.SubElement(srst, "name")
+        srstName.text = name
+        srstPort = etree.SubElement(srst, "port")
+        srstPort.text = port
+        srstIp = etree.SubElement(srst, "ipAddress")
+        srstIp.text = ip
+        srstSipNetwork = etree.SubElement(srst, "SipNetwork")
+        srstSipNetwork.text = ip
+        srstSipPort = etree.SubElement(srst, "SipPort")
+        srstSipPort.text  
+        secure = etree.SubElement(srst, "isSecure")
+        srstIsSecure = isSecure
+        
 
 class SqlQuery(SoapBase):
 
-    def __init__(self, query):
-        super().__init__()
+    def __init__(self, cluster, query):
+        super().__init__(cluster)
         self.operation = etree.SubElement(self.body, "{%s}executeSQLQuery" % SoapBase.ns)
         self.operation.set("sequence", "?")
         self.sql = etree.SubElement(self.operation, "sql")
@@ -72,8 +93,8 @@ class SqlAddPartition(SoapBase):
 
 class SqlAddCss(SoapBase):
     
-    def __init__(self, cssName, cssDesc, ptList):
-        super().__init__()
+    def __init__(self, cluster, cssName, cssDesc, ptList):
+        super().__init__(cluster)
         addCss = etree.SubElement(self.body, "{%s}addCss" % SoapBase.ns)
         addCss.set("sequence", "?")
         css = etree.SubElement(addCss, "css")

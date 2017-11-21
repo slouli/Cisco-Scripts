@@ -4,6 +4,7 @@ import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Add CSS w/ Partitions')
+    parser.add_argument('cluster', type=str)
     parser.add_argument('name', type=str)
     parser.add_argument('description', type=str)
     parser.add_argument('--n', dest='newName', type=str, help='CSS Name')
