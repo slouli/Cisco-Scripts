@@ -67,6 +67,23 @@ class AddSrst(SoapBase):
         srstIsSecure = isSecure
         
 
+class DoDeviceLogout(SoapBase):
+    def __init__(self, deviceName):
+        super().__init__()
+        self.operation = etree.SubElement(self.body, "{%s}doDeviceLogout" % SoapBase.ns)
+        self.deviceName = etree.SubElement(self.operation,"deviceName")
+        self.deviceName.text = deviceName
+
+
+class GetPhones(SoapBase):
+    def __init__(self, devicePool):
+        super().__init__()
+        self.operation = etree.SubElement(self.body, "{%s}listPhone" % SoapBase.ns)
+        self.searchCriteria = etree.SubElement(self.operation,"searchCriteria")
+        self.name = etree.SubElement(self.searchCriteria,"devicePoolName")
+        self.name.text = devicePool
+
+
 class SqlQuery(SoapBase):
 
     def __init__(self, cluster, query):
