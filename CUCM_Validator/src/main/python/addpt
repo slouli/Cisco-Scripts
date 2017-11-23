@@ -4,6 +4,7 @@ import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Partition Adder')
+    parser.add_argument('cluster', type=str)
     parser.add_argument('name', type=str)
     parser.add_argument('description', type=str)
     parser.add_argument('--execute', action='store_true')

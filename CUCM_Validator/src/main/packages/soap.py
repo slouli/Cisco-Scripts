@@ -96,8 +96,8 @@ class SqlQuery(SoapBase):
 
 class SqlAddPartition(SoapBase):
     
-    def __init__(self, ptName, ptDesc):
-        super().__init__()
+    def __init__(self, cluster, ptName, ptDesc):
+        super().__init__(cluster)
         addPt = etree.SubElement(self.body, "{%s}addRoutePartition" % SoapBase.ns)
         addPt.set("sequence", "?")
         pt = etree.SubElement(addPt, "routePartition")
@@ -131,8 +131,8 @@ class SqlAddCss(SoapBase):
 
 
 class SqlGetCss(SoapBase):
-    def __init__(self, cssName):
-        super().__init__()
+    def __init__(self, cluster, cssName):
+        super().__init__(cluster)
         getCss = etree.SubElement(self.body, "{$s}getCss" % SoapBase.ns)
         getCss.set("sequence", "?")
         name = etree.SubElement(getCss, "name")
@@ -140,8 +140,8 @@ class SqlGetCss(SoapBase):
 
 
 class SqlUpdatePt(SoapBase):
-    def __init__(self, ptName, newPtName):
-        super().__init__()
+    def __init__(self, cluster, ptName, newPtName):
+        super().__init__(cluster)
         updatePt = etree.SubElement(self.body, "{%s}updateRoutePartition" % SoapBase.ns)
         updatePt.set("sequence", "?")
         name = etree.SubElement(updatePt, "name")
@@ -152,8 +152,8 @@ class SqlUpdatePt(SoapBase):
 
 class SqlUpdateCss(SoapBase):
     
-    def __init__(self, cssName, ptList):
-        super().__init__()
+    def __init__(self, cluster, cssName, ptList):
+        super().__init__(cluster)
         updateCss = etree.SubElement(self.body, "{%s}updateCss" % SoapBase.ns)
         updateCss.set("sequence", "?")
         name = etree.SubElement(updateCss, "name")

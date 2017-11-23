@@ -4,6 +4,7 @@ import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bulk Partition Updater')
+    parser.add_argument('cluster', type=str)
     parser.add_argument('pattern', type=str)
     parser.add_argument('match', type=str)
     parser.add_argument('replace', type=str)

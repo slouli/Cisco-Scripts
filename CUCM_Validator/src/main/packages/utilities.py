@@ -21,9 +21,9 @@ def getPartitions(cluster):
     pts = xmlPts.xpath("//name/text()")
     return pts
 
-def getCallingSearchSpaces():
+def getCallingSearchSpaces(cluster):
     getCss = "select name, clause from callingsearchspace"
-    xmlCss = etree.fromstring(SqlQuery(getCss).execute(True))
+    xmlCss = etree.fromstring(SqlQuery(cluster, getCss).execute(True))
     cssNames = xmlCss.xpath("//name/text()")
     cssPts = xmlCss.xpath("//clause/text()")
     css = {css_name: set(partitions.split(':')) for (css_name, partitions) in zip(cssNames, cssPts)}

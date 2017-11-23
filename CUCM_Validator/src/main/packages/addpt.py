@@ -3,8 +3,8 @@ from packages.soap import SqlAddPartition
 from packages.utilities import getConfirmation
 
 def main(args):
-    print("{}, {}".format(args.name, args.description))
+    print("CLuster:{}\nPartition Name:{}\nPartition Description:{}".format(args.cluster, args.name, args.description))
 
     if args.execute:
         if getConfirmation():
-            print(SqlAddPartition(args.name, args.description).execute())
+            print(SqlAddPartition(args.cluster, args.name, args.description).execute())

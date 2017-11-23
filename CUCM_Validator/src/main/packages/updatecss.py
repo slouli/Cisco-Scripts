@@ -7,8 +7,8 @@ from packages.utilities import getPartitions, getCallingSearchSpaces, flatten, p
 
 
 def main(args):
-    pts = getPartitions()
-    css = getCallingSearchSpaces()
+    pts = getPartitions(args.cluster)
+    css = getCallingSearchSpaces(args.cluster)
     
     partitionList = sorted(flatten([partitionFilter(pts, pattern) for pattern in args.members]))
     cssList = cssFilter(css, args.name)
@@ -18,7 +18,7 @@ def main(args):
     
     if args.execute:
         if getConfirmation():
-            [print(SqlUpdateCss(cssName, ptList).execute()) for cssName, ptList in updatedCss.items()]
+            [print(SqlUpdateCss(args.cluster,cssName, ptList).execute()) for cssName, ptList in updatedCss.items()]
 
 
 #loc = re.search('CSS-(.*?)-.*', args.name).group(0)
